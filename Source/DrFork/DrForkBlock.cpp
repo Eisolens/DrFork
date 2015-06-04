@@ -14,7 +14,7 @@ ADrForkBlock::ADrForkBlock(const FObjectInitializer& ObjectInitializer)
 		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> BlueMaterial;
 		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> OrangeMaterial;
 		FConstructorStatics()
-			: PlaneMesh(TEXT("/Game/Puzzle/Meshes/PuzzleCube.PuzzleCube"))
+			: PlaneMesh(TEXT("/Game/Meshes/Tablet.Tablet"))
 			, BlueMaterial(TEXT("/Engine/TemplateResources/MI_Template_BaseBlue.MI_Template_BaseBlue"))
 			, OrangeMaterial(TEXT("/Engine/TemplateResources/MI_Template_BaseOrange.MI_Template_BaseOrange"))
 		{

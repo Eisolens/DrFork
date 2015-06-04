@@ -21,7 +21,7 @@ ADrForkBlockGrid::ADrForkBlockGrid(const FObjectInitializer& ObjectInitializer)
 
 	// Set defaults
 	Size = 3;
-	BlockSpacing = 300.f;
+	BlockSpacing = 256.f;
 }
 
 
