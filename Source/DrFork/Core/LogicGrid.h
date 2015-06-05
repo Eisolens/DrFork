@@ -5,7 +5,7 @@ class LogicGrid;
 static LogicGrid* LogicGridReference = nullptr;
 
 class DRFORK_API LogicGrid
-{	
+{
 	BlockColor GetRandomColor();
 public:
 	const static int GridWidth = 8;

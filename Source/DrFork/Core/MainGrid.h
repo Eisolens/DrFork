@@ -16,6 +16,7 @@ class DRFORK_API AMainGrid : public AActor
 	class USceneComponent* DummyRoot;
 
 	UStaticMesh* Tablet;
+	UStaticMesh* Virus;
 	UMaterialInstance* RedMat;
 	UMaterialInstance* BlueMat;
 	UMaterialInstance* YeullouMat;

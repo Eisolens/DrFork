@@ -9,12 +9,14 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 	RootComponent = DummyRoot;
 	ControlledBlock = nullptr;
 
-	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> tablet(TEXT("/Game/Meshes/Tablet.Tablet"));
+	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> tablet(TEXT("/Game/Meshes/Tablet"));
+	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> virus(TEXT("/Game/Meshes/Virus"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> redMaterial(TEXT("/Game/Materials/RedMat"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> blueMaterial(TEXT("/Game/Materials/BlueMat"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> yeullouMaterial(TEXT("/Game/Materials/YeullouMat"));
 
 	Tablet = tablet.Get();
+	Virus = virus.Get();
 	RedMat = redMaterial.Get();
 	BlueMat = blueMaterial.Get();
 	YeullouMat = yeullouMaterial.Get();
@@ -50,7 +52,7 @@ void AMainGrid::StartGame()
 					break;
 				}
 
-				NewBlock->Init(logicGrid->Grid[x][y].Type, logicGrid->Grid[x][y].Color, Tablet, bufmat);
+				NewBlock->Init(logicGrid->Grid[x][y].Type, logicGrid->Grid[x][y].Color, Virus, bufmat);
 				NewBlock->AttachRootComponentToActor(this);
 			}
 		}
