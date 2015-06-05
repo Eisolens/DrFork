@@ -1,13 +1,14 @@
 #pragma once
 
 enum BlockType {
-	None = 0,
+	Empty = 0,
 	Virus,
 	Tablet
 };
 
 enum BlockColor {
-	Red = 0,
+	None = 0,
+	Red,
 	Blue,
 	Yellou
 };
@@ -16,4 +17,11 @@ struct BlockTypes{
 	BlockType Type;
 	BlockColor Color;
 	BlockTypes();
+};
+
+struct Point
+{
+	int X;
+	int Y;
+	Point(){ X = 0; Y = 0; };
 };

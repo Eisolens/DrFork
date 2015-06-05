@@ -3,6 +3,6 @@
 
 BlockTypes::BlockTypes()
 {
-	Type = BlockType::None;
-	Color = BlockColor::Blue;
+	Type = BlockType::Empty;
+	Color = BlockColor::None;
 }

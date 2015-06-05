@@ -7,8 +7,6 @@
 ADrForkGameMode::ADrForkGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	// no pawn by default
 	DefaultPawnClass = NULL;
-	// use our own player controller class
 	PlayerControllerClass = ADrForkPlayerController::StaticClass();
 }
