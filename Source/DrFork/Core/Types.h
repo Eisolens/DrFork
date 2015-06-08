@@ -1,5 +1,12 @@
 #pragma once
 
+enum GameState {
+	Paused = 0,
+	UnPaused,
+	Started,
+	Finished
+};
+
 enum BlockType {
 	Empty = 0,
 	Virus,
@@ -23,4 +30,5 @@ struct Point {
 	int X;
 	int Y;
 	Point(){ X = 0; Y = 0; };
+	Point(int x, int y){ X = x; Y = y; };
 };

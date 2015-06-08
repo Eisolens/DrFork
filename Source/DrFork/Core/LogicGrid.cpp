@@ -23,6 +23,14 @@ BlockColor LogicGrid::GetRandomColor()
 	return BlockColor::None;
 }
 
+void LogicGrid::CreateNewTablet()
+{
+	for (int i = 0; i < 2; i++){
+		Grid[3 + i][GridHeight - 1].Type = BlockType::Tablet;
+		Grid[3 + i][GridHeight - 1].Color = GetRandomColor();
+	}
+}
+
 void LogicGrid::NewLevel()
 {
 	for (int x = 0; x < GridWidth; x++)
@@ -36,7 +44,13 @@ void LogicGrid::NewLevel()
 
 	int maxHeight = 2;
 	while ((maxHeight + 1) * GridWidth < settings->VirusCount * 2.5f)
+	{
 		maxHeight++;
+		if (maxHeight == 12)
+		{
+			//TODO win game
+		}
+	}
 
 	for (int i = 0; i < settings->VirusCount; i++)
 	{

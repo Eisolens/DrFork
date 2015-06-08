@@ -13,6 +13,8 @@ public:
 	BlockTypes Grid[GridWidth][GridHeight];
 
 	static LogicGrid* Get(){ if (LogicGridReference == nullptr) LogicGridReference = new LogicGrid(); return LogicGridReference; };
+	
+	void CreateNewTablet();
 
 	void NewLevel();
 

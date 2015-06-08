@@ -11,6 +11,8 @@ UCLASS()
 class DRFORK_API AMainGrid : public AActor
 {
 	GENERATED_BODY()
+
+	AGameBlock* CreateBlock(Point pos, FRotator rot);
 	
 	UPROPERTY(Category = Block, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* DummyRoot;
@@ -21,13 +23,23 @@ class DRFORK_API AMainGrid : public AActor
 	UMaterialInstance* BlueMat;
 	UMaterialInstance* YeullouMat;
 
+	GameState GameState;
+
 public:	
-	AGameBlock* ControlledBlock;
+	AGameBlock* ControlledTablet;
 
 	AMainGrid(const FObjectInitializer& ObjectInitializer);
 
 	static AMainGrid* Get(){ return AMainGridReference; };
+
+	void NewLevel();
+	void CreateNewTablet();
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void PauseGame();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
