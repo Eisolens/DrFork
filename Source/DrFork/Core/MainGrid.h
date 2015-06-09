@@ -42,12 +42,19 @@ public:
 	bool CheckMoveBlock(AGameBlock* block, int diffX, int diffY);
 	bool CeckMoveBlockChield(AGameBlock* block, int diffX, int diffY);
 	bool CheckIndexes(AGameBlock* block, int diffX, int diffY);
+	void SetBlockActorPosition(AGameBlock* block, int diffX, int diffY);
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void PauseGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void RotateTablet();
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void MoveTablet(int32 diffX, int32 diffY);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
