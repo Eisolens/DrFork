@@ -1,5 +1,6 @@
 #pragma once
 #include "GameBlock.h"
+#include "LogicGrid.h"
 #include "GameFramework/Actor.h"
 #include "MainGrid.generated.h"
 
@@ -24,7 +25,9 @@ class DRFORK_API AMainGrid : public AActor
 	UMaterialInstance* YeullouMat;
 
 	GameState GameState;
+	LogicGrid LogicGrid;
 
+	float CollectedTime;
 public:	
 	AGameBlock* ControlledTablet;
 
@@ -34,6 +37,10 @@ public:
 
 	void NewLevel();
 	void CreateNewTablet();
+	void DropTablet(float DeltaTime);
+	bool CheckMoveBlock(AGameBlock* block, int diffX, int diffY);
+	bool CeckMoveBlockChield(AGameBlock* block, int diffX, int diffY);
+	bool CheckIndexes(AGameBlock* block, int diffX, int diffY);
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();

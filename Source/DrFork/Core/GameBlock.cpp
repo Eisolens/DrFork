@@ -21,10 +21,12 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMate
 	{
 	case BlockType::Tablet :
 		PrimaryActorTick.bCanEverTick = true;
+		this->SetActorScale3D(FVector(1, 0.5f, 1));
 		this->RootComponent->SetMobility(EComponentMobility::Movable);
 		break;
 	case BlockType::Virus:
 		PrimaryActorTick.bCanEverTick = false;
+		this->SetActorScale3D(FVector(1, 1, 0.5f));
 		this->RootComponent->SetMobility(EComponentMobility::Stationary);
 		break;
 	}

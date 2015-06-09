@@ -10,9 +10,11 @@ class DRFORK_API LogicGrid
 public:
 	const static int GridWidth = 8;
 	const static int GridHeight = 17;
-	BlockTypes Grid[GridWidth][GridHeight];
+	LogicBlockTypes Grid[GridWidth][GridHeight];
 
 	static LogicGrid* Get(){ if (LogicGridReference == nullptr) LogicGridReference = new LogicGrid(); return LogicGridReference; };
+	void MoveBlock(const Point& from, const Point& to);
+	void ResetCell(const Point& pos);
 	
 	void CreateNewTablet();
 

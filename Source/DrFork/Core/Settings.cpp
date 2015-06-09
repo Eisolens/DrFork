@@ -9,7 +9,7 @@ Settings::Settings()
 
 void Settings::IncreaseComplexity()
 {
-	Speed *= 0.9f;
+	Speed *= 0.5f;
 	
 	int minIncreaseVirusCount = 2;
 	if (VirusCount * 0.1f > minIncreaseVirusCount)

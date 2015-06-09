@@ -1,7 +1,7 @@
 #include "DrFork.h"
 #include "MainGrid.h"
 #include "GameBlock.h"
-#include "LogicGrid.h"
+#include "Settings.h"
 
 AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 {
@@ -27,14 +27,13 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 
 AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
 {
-	LogicGrid* logicGrid = LogicGrid::Get();
 	AGameBlock* NewBlock = GetWorld()->SpawnActor<AGameBlock>(FVector(pos.Y * BlockSize, pos.X * BlockSize, 0), rot);
-
+	LogicGrid.Grid[pos.X][pos.Y].Ref = NewBlock;
 	NewBlock->Pos = pos;
 
 	UMaterialInstance* bufmat = nullptr;
 
-	switch (logicGrid->Grid[pos.X][pos.Y].Color)
+	switch (LogicGrid.Grid[pos.X][pos.Y].Color)
 	{
 	case BlockColor::Blue:
 		bufmat = BlueMat;
@@ -49,7 +48,7 @@ AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
 
 	UStaticMesh* bufMesh = nullptr;
 
-	switch (logicGrid->Grid[pos.X][pos.Y].Type)
+	switch (LogicGrid.Grid[pos.X][pos.Y].Type)
 	{
 	case BlockType::Virus:
 		bufMesh = Virus;
@@ -61,7 +60,7 @@ AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
 	}
 
 
-	NewBlock->Init(logicGrid->Grid[pos.X][pos.Y].Type, logicGrid->Grid[pos.X][pos.Y].Color, bufMesh, bufmat);
+	NewBlock->Init(LogicGrid.Grid[pos.X][pos.Y].Type, LogicGrid.Grid[pos.X][pos.Y].Color, bufMesh, bufmat);
 	NewBlock->AttachRootComponentToActor(this);
 	return NewBlock;
 }
@@ -71,13 +70,12 @@ void AMainGrid::NewLevel()
 	for (auto chield : this->Children)
 		chield->Destroy();
 
-	LogicGrid* logicGrid = LogicGrid::Get();
-	logicGrid->NewLevel();
+	LogicGrid.NewLevel();
 
-	for (int x = 0; x < logicGrid->GridWidth; x++)
-		for (int y = 0; y < logicGrid->GridHeight; y++)
+	for (int x = 0; x < LogicGrid.GridWidth; x++)
+		for (int y = 0; y < LogicGrid.GridHeight; y++)
 		{
-			if (logicGrid->Grid[x][y].Type == BlockType::Virus)
+			if (LogicGrid.Grid[x][y].Type == BlockType::Virus)
 			{
 				CreateBlock(Point(x, y), FRotator(0, 0, 0));
 			}
@@ -86,11 +84,114 @@ void AMainGrid::NewLevel()
 
 void AMainGrid::CreateNewTablet()
 {
-	LogicGrid* logicGrid = LogicGrid::Get();
-	logicGrid->CreateNewTablet();
+	LogicGrid.CreateNewTablet();
 
-	AGameBlock* LeftPart = CreateBlock(Point(3, logicGrid->GridHeight - 1), FRotator(0, 0, -90));
-	AGameBlock* RightPart = CreateBlock(Point(4, logicGrid->GridHeight - 1), FRotator(0, 0, 90));
+	AGameBlock* LeftPart = CreateBlock(Point(3, LogicGrid.GridHeight - 1), FRotator(0, 0, -90));
+	AGameBlock* RightPart = CreateBlock(Point(4, LogicGrid.GridHeight - 1), FRotator(0, 0, 90));
+	LeftPart->Link = RightPart;
+	RightPart->Link = LeftPart;
+	this->ControlledTablet = LeftPart;
+}
+
+void AMainGrid::DropTablet(float DeltaTime)
+{
+	if (ControlledTablet != nullptr)
+	{
+		CollectedTime += DeltaTime;
+		Settings* Settings = Settings::Get();
+		if (CollectedTime >= Settings->Speed)
+		{
+			CollectedTime -= Settings->Speed;
+			if (CheckMoveBlock(ControlledTablet, 0, -1))
+			{
+				ControlledTablet->SetActorRelativeLocation(FVector((ControlledTablet->Pos.Y - 1) * BlockSize, ControlledTablet->Pos.X * BlockSize, 0));
+				LogicGrid.MoveBlock(ControlledTablet->Pos, Point(ControlledTablet->Pos.X, ControlledTablet->Pos.Y - 1));
+				ControlledTablet->Pos.Y -= 1;
+				if (ControlledTablet->Link != nullptr){
+					ControlledTablet->Link->SetActorRelativeLocation(FVector((ControlledTablet->Link->Pos.Y - 1) * BlockSize, ControlledTablet->Link->Pos.X * BlockSize, 0));
+					LogicGrid.MoveBlock(ControlledTablet->Link->Pos, Point(ControlledTablet->Link->Pos.X, ControlledTablet->Link->Pos.Y - 1));
+					ControlledTablet->Link->Pos.Y -= 1;
+				}
+			} else {
+				ControlledTablet = nullptr;
+			}
+		}
+	} else {
+		//TODO DELETE ROUND
+		//     / \
+		//      |
+		//     \ /
+		//TODO MOVE ROUNT
+		//TODO then create tablet
+		CreateNewTablet();
+	}
+}
+
+bool AMainGrid::CheckMoveBlock(AGameBlock* block, int diffX, int diffY)
+{
+	if (!CheckIndexes(block, diffX, diffY))
+		return false;
+
+	LogicBlockTypes& refCell = LogicGrid.Grid[block->Pos.X + diffX][block->Pos.Y + diffY];
+
+	switch (refCell.Type){
+	case BlockType::Empty :
+		return CeckMoveBlockChield(block, diffX, diffY);
+		break;
+	case BlockType::Tablet :
+		if (CheckMoveBlock(refCell.Ref, 0, -1)){
+			return CeckMoveBlockChield(block, diffX, diffY);
+		} else {
+			return false;
+		}
+		break;
+	case BlockType::Virus :
+		return false;
+		break;
+	}
+	return false;
+}
+
+bool AMainGrid::CeckMoveBlockChield(AGameBlock* block, int diffX, int diffY)
+{
+	if (block->Link != nullptr)
+	{
+		if (!CheckIndexes(block->Link, diffX, diffY))
+			return false;
+
+		LogicBlockTypes& refCell = LogicGrid.Grid[block->Link->Pos.X + diffX][block->Link->Pos.Y + diffY];
+
+		switch (refCell.Type){
+		case BlockType::Empty:
+			return true;
+			break;
+		case BlockType::Tablet:
+			if (block->Link->Link == block)
+				return true;
+			return CheckMoveBlock(refCell.Ref, 0, -1);
+			break;
+		case BlockType::Virus:
+			return false;
+			break;
+		}
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+bool AMainGrid::CheckIndexes(AGameBlock* block, int diffX, int diffY)
+{
+	if (block->Pos.X + diffX < 0)
+		return false;
+	if (block->Pos.X + diffX > LogicGrid.GridWidth - 1)
+		return false;
+	if (block->Pos.Y + diffY < 0)
+		return false;
+	if (block->Pos.Y + diffY > LogicGrid.GridHeight - 1)
+		return false;
+	return true;
 }
 
 void AMainGrid::PauseGame()
@@ -126,6 +227,7 @@ void AMainGrid::Tick( float DeltaTime )
 		GameState = GameState::Started;
 		break;
 	case GameState::Started:
+		DropTablet(DeltaTime);
 		break;
 	}
 }

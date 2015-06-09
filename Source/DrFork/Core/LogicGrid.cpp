@@ -35,10 +35,8 @@ void LogicGrid::NewLevel()
 {
 	for (int x = 0; x < GridWidth; x++)
 		for (int y = 0; y < GridHeight; y++)
-		{
-			Grid[x][y].Color = BlockColor::None;
-			Grid[x][y].Type = BlockType::Empty;
-		}
+			ResetCell(Point(x, y));
+
 	Settings* settings = Settings::Get();
 	settings->IncreaseComplexity();
 
@@ -73,8 +71,22 @@ void LogicGrid::NewLevel()
 	}
 }
 
+void LogicGrid::MoveBlock(const Point& from, const Point& to)
+{
+	Grid[to.X][to.Y] = Grid[from.X][from.Y];
+	ResetCell(from);
+}
+
+void LogicGrid::ResetCell(const Point& pos)
+{
+	Grid[pos.X][pos.Y].Color = BlockColor::None;
+	Grid[pos.X][pos.Y].Type = BlockType::Empty;
+	Grid[pos.X][pos.Y].Ref = nullptr;
+}
+
 LogicGrid::LogicGrid()
 {
+	LogicGridReference = this;
 }
 
 LogicGrid::~LogicGrid()

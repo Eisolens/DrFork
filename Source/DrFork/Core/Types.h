@@ -1,5 +1,7 @@
 #pragma once
 
+class AGameBlock;
+
 enum GameState {
 	Paused = 0,
 	UnPaused,
@@ -24,6 +26,11 @@ struct BlockTypes {
 	BlockType Type;
 	BlockColor Color;
 	BlockTypes();
+};
+
+struct LogicBlockTypes : public BlockTypes {
+	AGameBlock * Ref;
+	LogicBlockTypes();
 };
 
 struct Point {
