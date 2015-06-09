@@ -88,6 +88,8 @@ void AMainGrid::CreateNewTablet()
 
 	AGameBlock* LeftPart = CreateBlock(Point(3, LogicGrid.GridHeight - 1), FRotator(0, 0, -90));
 	AGameBlock* RightPart = CreateBlock(Point(4, LogicGrid.GridHeight - 1), FRotator(0, 0, 90));
+	LeftPart->SetOutline(true);
+	RightPart->SetOutline(true);
 	LeftPart->Link = RightPart;
 	RightPart->Link = LeftPart;
 	this->ControlledTablet = LeftPart;
@@ -113,6 +115,9 @@ void AMainGrid::DropTablet(float DeltaTime)
 					ControlledTablet->Link->Pos.Y -= 1;
 				}
 			} else {
+				ControlledTablet->SetOutline(false);
+				if (ControlledTablet->Link != nullptr)
+					ControlledTablet->Link->SetOutline(false);
 				ControlledTablet = nullptr;
 			}
 		}

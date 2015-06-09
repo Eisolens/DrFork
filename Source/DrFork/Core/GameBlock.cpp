@@ -37,6 +37,11 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMate
 	//BlockMesh->OnInputTouchBegin.AddDynamic(this, &ADrForkBlock::OnFingerPressedBlock);
 }
 
+void AGameBlock::SetOutline(bool check)
+{
+	BlockMesh->SetRenderCustomDepth(check);
+}
+
 void AGameBlock::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );

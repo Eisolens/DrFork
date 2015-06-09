@@ -24,4 +24,5 @@ public:
 	AGameBlock(const FObjectInitializer& ObjectInitializer);
 	void Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMaterialInstance* Material);
 	virtual void Tick( float DeltaSeconds ) override;
+	void SetOutline(bool check);
 };

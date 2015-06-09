@@ -3,7 +3,7 @@
 class Settings;
 static Settings* SettingsReference = nullptr;
 
-const static float DefaultSpeed = 1.1f;
+const static float DefaultSpeed = 0.7f;
 const static int DefaultVirusCount = 8;
 
 class DRFORK_API Settings
