@@ -106,14 +106,7 @@ void AMainGrid::DropTablet(float DeltaTime)
 			CollectedTime -= Settings->Speed;
 			if (CheckMoveBlock(ControlledTablet, 0, -1))
 			{
-				ControlledTablet->SetActorRelativeLocation(FVector((ControlledTablet->Pos.Y - 1) * BlockSize, ControlledTablet->Pos.X * BlockSize, 0));
-				LogicGrid.MoveBlock(ControlledTablet->Pos, Point(ControlledTablet->Pos.X, ControlledTablet->Pos.Y - 1));
-				ControlledTablet->Pos.Y -= 1;
-				if (ControlledTablet->Link != nullptr){
-					ControlledTablet->Link->SetActorRelativeLocation(FVector((ControlledTablet->Link->Pos.Y - 1) * BlockSize, ControlledTablet->Link->Pos.X * BlockSize, 0));
-					LogicGrid.MoveBlock(ControlledTablet->Link->Pos, Point(ControlledTablet->Link->Pos.X, ControlledTablet->Link->Pos.Y - 1));
-					ControlledTablet->Link->Pos.Y -= 1;
-				}
+				MoveBlock(ControlledTablet, 0, -1);
 			} else {
 				ControlledTablet->SetOutline(false);
 				if (ControlledTablet->Link != nullptr)
@@ -129,6 +122,18 @@ void AMainGrid::DropTablet(float DeltaTime)
 		//TODO MOVE ROUNT
 		//TODO then create tablet
 		CreateNewTablet();
+	}
+}
+
+void AMainGrid::MoveBlock(AGameBlock* block, int diffX, int diffY)
+{
+	block->SetActorRelativeLocation(FVector((block->Pos.Y + diffY) * BlockSize, (block->Pos.X + diffX) * BlockSize, 0));
+	LogicGrid.MoveBlock(block->Pos, Point(block->Pos.X, block->Pos.Y - 1));
+	block->Pos.Y -= 1;
+	if (block->Link != nullptr){
+		block->Link->SetActorRelativeLocation(FVector((block->Link->Pos.Y + diffY) * BlockSize, (block->Link->Pos.X + diffX) * BlockSize, 0));
+		LogicGrid.MoveBlock(block->Link->Pos, Point(block->Link->Pos.X, block->Link->Pos.Y - 1));
+		block->Link->Pos.Y -= 1;
 	}
 }
 

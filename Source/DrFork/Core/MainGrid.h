@@ -14,6 +14,7 @@ class DRFORK_API AMainGrid : public AActor
 	GENERATED_BODY()
 
 	AGameBlock* CreateBlock(Point pos, FRotator rot);
+	void MoveBlock(AGameBlock* block, int diffX, int diffY);
 	
 	UPROPERTY(Category = Block, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* DummyRoot;
