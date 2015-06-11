@@ -9,6 +9,7 @@ AGameBlock::AGameBlock(const FObjectInitializer& ObjectInitializer)
 	RootComponent = DummyRoot;
 	BlockMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BlockMesh0"));
 	BlockMesh->AttachTo(DummyRoot);
+	RotState = TabletRotState::Right;
 	Link = nullptr;
 }
 

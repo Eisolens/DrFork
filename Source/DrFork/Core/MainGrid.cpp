@@ -103,6 +103,31 @@ void AMainGrid::SetBlockActorPosition(AGameBlock* block, int diffX, int diffY)
 	block->Pos.X += diffX;
 }
 
+void AMainGrid::SetTabletActorPosition(AGameBlock* block, int diffX, int diffY)
+{
+	AGameBlock* chield = block->Link;
+
+	block->SetActorRelativeLocation(FVector((block->Pos.Y + diffY) * BlockSize, (block->Pos.X + diffX) * BlockSize, 0));
+	chield->SetActorRelativeLocation(FVector((chield->Pos.Y + diffY) * BlockSize, (chield->Pos.X + diffX) * BlockSize, 0));
+
+	Point blockPos = Point(block->Pos.X + diffX, block->Pos.Y + diffY);
+	Point chieldPos = Point(chield->Pos.X + diffX, chield->Pos.Y + diffY);
+
+	LogicGrid.MoveTablet(block->Pos, blockPos, chield->Pos, chieldPos);
+
+	block->Pos = blockPos;
+	chield->Pos = chieldPos;
+}
+
+void AMainGrid::RotateTabletActor(AGameBlock* block)
+{
+	FRotator rot = block->GetActorRotation();
+	block->SetActorRotation(FRotator(rot.Pitch,rot.Yaw + 90,rot.Roll));
+
+	rot = block->Link->GetActorRotation();
+	block->Link->SetActorRotation(FRotator(rot.Pitch, rot.Yaw + 90, rot.Roll));
+}
+
 void AMainGrid::DropTablet(float DeltaTime)
 {
 	if (ControlledTablet != nullptr)
@@ -114,9 +139,7 @@ void AMainGrid::DropTablet(float DeltaTime)
 			CollectedTime -= Settings->Speed;
 			if (CheckMoveBlock(ControlledTablet, 0, -1))
 			{
-				SetBlockActorPosition(ControlledTablet, 0, -1);
-				if (ControlledTablet->Link != nullptr)
-					SetBlockActorPosition(ControlledTablet->Link, 0, -1);
+				SetTabletActorPosition(ControlledTablet, 0, -1);
 			} else {
 				ControlledTablet->SetOutline(false);
 				if (ControlledTablet->Link != nullptr)
@@ -135,22 +158,47 @@ void AMainGrid::DropTablet(float DeltaTime)
 	}
 }
 
-void AMainGrid::MoveBlock(AGameBlock* block, int diffX, int diffY)
-{
-	block->SetActorRelativeLocation(FVector((block->Pos.Y + diffY) * BlockSize, (block->Pos.X + diffX) * BlockSize, 0));
-	LogicGrid.MoveBlock(block->Pos, Point(block->Pos.X, block->Pos.Y - 1));
-	block->Pos.Y -= 1;
-	if (block->Link != nullptr){
-		block->Link->SetActorRelativeLocation(FVector((block->Link->Pos.Y + diffY) * BlockSize, (block->Link->Pos.X + diffX) * BlockSize, 0));
-		LogicGrid.MoveBlock(block->Link->Pos, Point(block->Link->Pos.X, block->Link->Pos.Y - 1));
-		block->Link->Pos.Y -= 1;
-	}
-}
-
 void AMainGrid::RotateTablet()
 {
 	if (ControlledTablet == nullptr)
 		return;
+	Point diff;
+
+	switch (ControlledTablet->RotState)
+	{
+	case TabletRotState::Right:
+		diff = Point(-1,-1);
+		break;
+	case TabletRotState::Down:
+		diff = Point(-1, 1);
+		break;
+	case TabletRotState::Left:
+		diff = Point(1, 1);
+		break;
+	case TabletRotState::Up:
+		diff = Point(1, -1);
+		break;
+	}
+	if (CeckMoveBlockChield(ControlledTablet, diff.X, diff.Y))
+	{
+		SetBlockActorPosition(ControlledTablet->Link, diff.X, diff.Y);
+		RotateTabletActor(ControlledTablet);
+		switch (ControlledTablet->RotState)
+		{
+		case TabletRotState::Right:
+			ControlledTablet->RotState = TabletRotState::Down;
+			break;
+		case TabletRotState::Down:
+			ControlledTablet->RotState = TabletRotState::Left;
+			break;
+		case TabletRotState::Left:
+			ControlledTablet->RotState = TabletRotState::Up;
+			break;
+		case TabletRotState::Up:
+			ControlledTablet->RotState = TabletRotState::Right;
+			break;
+		}
+	}
 }
 
 void AMainGrid::MoveTablet(int32 diffX, int32 diffY)
@@ -158,11 +206,7 @@ void AMainGrid::MoveTablet(int32 diffX, int32 diffY)
 	if (ControlledTablet == nullptr)
 		return;
 	if (CheckMoveBlock(this->ControlledTablet, diffX, diffY))
-	{
-		SetBlockActorPosition(ControlledTablet, diffX, diffY);
-		if (ControlledTablet->Link != nullptr)
-			SetBlockActorPosition(ControlledTablet->Link, diffX, diffY);
-	}
+		SetTabletActorPosition(ControlledTablet, diffX, diffY);
 }
 
 bool AMainGrid::CheckMoveBlock(AGameBlock* block, int diffX, int diffY)
@@ -177,11 +221,9 @@ bool AMainGrid::CheckMoveBlock(AGameBlock* block, int diffX, int diffY)
 		return CeckMoveBlockChield(block, diffX, diffY);
 		break;
 	case BlockType::Tablet :
-		if (CheckMoveBlock(refCell.Ref, 0, -1)){
+		if (block == refCell.Ref->Link)
 			return CeckMoveBlockChield(block, diffX, diffY);
-		} else {
-			return false;
-		}
+		return false;
 		break;
 	case BlockType::Virus :
 		return false;
@@ -204,9 +246,9 @@ bool AMainGrid::CeckMoveBlockChield(AGameBlock* block, int diffX, int diffY)
 			return true;
 			break;
 		case BlockType::Tablet:
-			if (block->Link->Link == block)
+			if (block->Link == refCell.Ref->Link)
 				return true;
-			return CheckMoveBlock(refCell.Ref, 0, -1);
+			return false;
 			break;
 		case BlockType::Virus:
 			return false;

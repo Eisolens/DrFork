@@ -14,6 +14,7 @@ public:
 
 	static LogicGrid* Get(){ if (LogicGridReference == nullptr) LogicGridReference = new LogicGrid(); return LogicGridReference; };
 	void MoveBlock(const Point& from, const Point& to);
+	void MoveTablet(const Point& from1, const Point& to1, const Point& from2, const Point& to2);
 	void ResetCell(const Point& pos);
 	
 	void CreateNewTablet();

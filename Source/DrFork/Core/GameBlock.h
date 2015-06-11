@@ -17,6 +17,7 @@ class DRFORK_API AGameBlock : public AActor
 
 public:	
 	BlockTypes Types;
+	TabletRotState RotState;
 	AGameBlock* Link;
 	Point Pos;
 	bool IsCanMove;

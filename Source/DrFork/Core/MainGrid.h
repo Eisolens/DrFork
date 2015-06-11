@@ -14,7 +14,6 @@ class DRFORK_API AMainGrid : public AActor
 	GENERATED_BODY()
 
 	AGameBlock* CreateBlock(Point pos, FRotator rot);
-	void MoveBlock(AGameBlock* block, int diffX, int diffY);
 	
 	UPROPERTY(Category = Block, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* DummyRoot;
@@ -43,6 +42,8 @@ public:
 	bool CeckMoveBlockChield(AGameBlock* block, int diffX, int diffY);
 	bool CheckIndexes(AGameBlock* block, int diffX, int diffY);
 	void SetBlockActorPosition(AGameBlock* block, int diffX, int diffY);
+	void SetTabletActorPosition(AGameBlock* block, int diffX, int diffY);
+	void RotateTabletActor(AGameBlock* block);
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();

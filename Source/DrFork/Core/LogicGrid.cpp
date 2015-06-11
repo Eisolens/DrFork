@@ -77,6 +77,18 @@ void LogicGrid::MoveBlock(const Point& from, const Point& to)
 	ResetCell(from);
 }
 
+void LogicGrid::MoveTablet(const Point& from1, const Point& to1, const Point& from2, const Point& to2)
+{
+	LogicBlockTypes buf1 = Grid[from1.X][from1.Y];
+	LogicBlockTypes buf2 = Grid[from2.X][from2.Y];
+
+	ResetCell(from1);
+	ResetCell(from2);
+
+	Grid[to1.X][to1.Y] = buf1;
+	Grid[to2.X][to2.Y] = buf2;
+}
+
 void LogicGrid::ResetCell(const Point& pos)
 {
 	Grid[pos.X][pos.Y].Color = BlockColor::None;

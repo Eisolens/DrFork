@@ -2,6 +2,13 @@
 
 class AGameBlock;
 
+enum TabletRotState {
+	Right = 0,
+	Down,
+	Left,
+	Up
+};
+
 enum GameState {
 	Paused = 0,
 	UnPaused,
