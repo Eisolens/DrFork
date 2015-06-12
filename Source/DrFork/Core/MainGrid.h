@@ -44,6 +44,7 @@ public:
 	void SetBlockActorPosition(AGameBlock* block, int diffX, int diffY);
 	void SetTabletActorPosition(AGameBlock* block, int diffX, int diffY);
 	void RotateTabletActor(AGameBlock* block);
+	void DestroyRound();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();

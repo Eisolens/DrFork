@@ -148,6 +148,7 @@ void AMainGrid::DropTablet(float DeltaTime)
 			}
 		}
 	} else {
+		DestroyRound();
 		//TODO DELETE ROUND
 		//     / \
 		//      |
@@ -156,6 +157,83 @@ void AMainGrid::DropTablet(float DeltaTime)
 		//TODO then create tablet
 		CreateNewTablet();
 	}
+}
+
+void AMainGrid::DestroyRound()
+{
+	struct DeleteElements
+	{
+		Point From;
+		Point To;
+		DeleteElements(const Point& from, const Point& to) :From(from), To(to){};
+	};
+	TArray<DeleteElements> delElem;
+	
+	for (int i = 0; i < LogicGrid.GridWidth; i++)
+	{
+		Point from = Point(i, 0);
+		Point to = from;
+		for (int j = 1; j < LogicGrid.GridHeight; j++)
+		{
+			LogicBlockTypes* cell = &LogicGrid.Grid[i][j];
+			
+			if (LogicGrid.Grid[from.X][from.Y].Type == BlockType::Empty)
+			{
+				from = Point(i, j);
+				continue;
+			}
+
+			if (cell->Color == LogicGrid.Grid[from.X][from.Y].Color)
+			{
+				to = Point(i, j);
+			}
+			else 
+			{
+				if (FMath::Abs(from.X - to.X) >= 3 || FMath::Abs(from.Y - to.Y) >= 3)
+					delElem.Add(DeleteElements(from, to));
+				from = Point(i, j);
+			}
+		}
+	}
+
+	for (int j = 0; j < LogicGrid.GridHeight; j++)
+	{
+		Point from = Point(0, j);
+		Point to = from;
+		for (int i = 1; i < LogicGrid.GridWidth; i++)
+		{
+			LogicBlockTypes* cell = &LogicGrid.Grid[i][j];
+
+			if (LogicGrid.Grid[from.X][from.Y].Type == BlockType::Empty)
+			{
+				from = Point(i, j);
+				continue;
+			}
+
+			if (cell->Color == LogicGrid.Grid[from.X][from.Y].Color)
+			{
+				to = Point(i, j);
+			}
+			else
+			{
+				if (FMath::Abs(from.X - to.X) >= 3 || FMath::Abs(from.Y - to.Y) >= 3)
+					delElem.Add(DeleteElements(from, to));
+				from = Point(i, j);
+			}
+		}
+	}
+
+	for (auto del : delElem)
+		for (int i = del.From.X; i <= del.To.X; i++)
+			for (int j = del.From.Y; j <= del.To.Y; j++)
+				if (LogicGrid.Grid[i][j].Ref != nullptr)
+				{
+					AGameBlock* block = LogicGrid.Grid[i][j].Ref;
+					if (block->Link != nullptr)
+						block->Link->Link = nullptr;
+					block->Destroy();
+					LogicGrid.ResetCell(Point(i, j));
+				}
 }
 
 void AMainGrid::RotateTablet()
