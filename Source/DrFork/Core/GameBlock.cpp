@@ -10,6 +10,7 @@ AGameBlock::AGameBlock(const FObjectInitializer& ObjectInitializer)
 	BlockMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BlockMesh0"));
 	BlockMesh->AttachTo(DummyRoot);
 	RotState = TabletRotState::Right;
+	PrimaryActorTick.bCanEverTick = false;
 	Link = nullptr;
 }
 
@@ -21,12 +22,10 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMate
 	switch (Type)
 	{
 	case BlockType::Tablet :
-		PrimaryActorTick.bCanEverTick = true;
 		this->SetActorScale3D(FVector(1, 0.5f, 1));
 		this->RootComponent->SetMobility(EComponentMobility::Movable);
 		break;
 	case BlockType::Virus:
-		PrimaryActorTick.bCanEverTick = false;
 		this->SetActorScale3D(FVector(1, 1, 0.5f));
 		this->RootComponent->SetMobility(EComponentMobility::Stationary);
 		break;
@@ -40,9 +39,3 @@ void AGameBlock::SetOutline(bool check)
 {
 	BlockMesh->SetRenderCustomDepth(check);
 }
-
-void AGameBlock::Tick( float DeltaTime )
-{
-	Super::Tick( DeltaTime );
-}
-

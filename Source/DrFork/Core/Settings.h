@@ -3,8 +3,8 @@
 class Settings;
 static Settings* SettingsReference = nullptr;
 
-const static float DefaultSpeed = 0.7f;
-const static int DefaultVirusCount = 8;
+const static float DefaultSpeed = 0.9f;
+const static int DefaultVirusCount = 4;
 
 class DRFORK_API Settings
 {
@@ -14,7 +14,7 @@ public:
 
 	static Settings* Get(){ if (SettingsReference == nullptr) SettingsReference = new Settings(); return SettingsReference; };
 	void IncreaseComplexity();
-	float GetUnControlledSpeed(){ return Speed * 0.6f; };
+	float GetUnControlledSpeed(){ return Speed * 0.7f; };
 	void Reset();
 
 	Settings();

@@ -39,7 +39,7 @@ public:
 
 	void NewLevel();
 	void CreateNewTablet();
-	void GameCycle(float DeltaTime);
+	
 	void MoveControlledTablet();
 	void MoveUncontrolledTablet();
 	bool CheckMoveBlock(AGameBlock* block, int diffX, int diffY);
@@ -48,8 +48,12 @@ public:
 	void SetBlockActorPosition(AGameBlock* block, int diffX, int diffY);
 	void SetTabletActorPosition(AGameBlock* block, int diffX, int diffY);
 	void RotateTabletActor(AGameBlock* block);
+	
+
+	void GameCycle(float DeltaTime);
 	bool DestroyRound();
 	bool CheckMoveRound();
+	bool CheckFinishGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();

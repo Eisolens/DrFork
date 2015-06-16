@@ -68,8 +68,10 @@ AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
 
 void AMainGrid::NewLevel()
 {
-	for (auto chield : this->Children)
-		chield->Destroy();
+	for (int i = 0; i < LogicGrid.GridWidth; i++)
+		for (int j = 0; j < LogicGrid.GridHeight; j++)
+			if (LogicGrid.Grid[i][j].Ref != nullptr)
+				LogicGrid.Grid[i][j].Ref->Destroy(true);
 
 	LogicGrid.NewLevel();
 
@@ -125,32 +127,11 @@ void AMainGrid::RotateTabletActor(AGameBlock* block)
 	block->Link->SetActorRotation(FRotator(rot.Pitch, rot.Yaw + 90, rot.Roll));
 }
 
-void AMainGrid::GameCycle(float DeltaTime)
-{
-	CollectedTime += DeltaTime;
-	switch (GameRoundState)
-	{
-	case MoveControlTablet:
-		MoveControlledTablet();
-		break;
-	case DestroyBlocksRound:
-		if(DestroyRound())
-			if (CheckMoveRound())
-				GameRoundState = GameRoundState::MoveUnControlTablet;
-			else
-				GameRoundState = GameRoundState::MoveControlTablet;
-			break;
-	case MoveUnControlTablet:
-		MoveUncontrolledTablet();
-		break;
-	}
-}
-
 void AMainGrid::MoveUncontrolledTablet()
 {
-	if (CollectedTime >= Settings::Get()->Speed * 0.8f)
+	if (CollectedTime >= Settings::Get()->GetUnControlledSpeed())
 	{
-		CollectedTime -= Settings::Get()->Speed * 0.8f;
+		CollectedTime -= Settings::Get()->GetUnControlledSpeed();
 		GameRoundState = GameRoundState::DestroyBlocksRound;
 		for (int i = 0; i < LogicGrid.GridWidth; i++)
 			for (int j = 1; j < LogicGrid.GridHeight; j++)
@@ -166,12 +147,12 @@ void AMainGrid::MoveUncontrolledTablet()
 
 void AMainGrid::MoveControlledTablet()
 {
+	Settings* Settings = Settings::Get();
 	if (ControlledTablet != nullptr)
 	{
-		Settings* Settings = Settings::Get();
-		if (CollectedTime >= Settings->GetUnControlledSpeed())
+		if (CollectedTime >= Settings->Speed)
 		{
-			CollectedTime -= Settings->GetUnControlledSpeed();
+			CollectedTime -= Settings->Speed;
 			if (CheckMoveBlock(ControlledTablet, 0, -1))
 			{
 				SetTabletActorPosition(ControlledTablet, 0, -1);
@@ -188,7 +169,11 @@ void AMainGrid::MoveControlledTablet()
 	}
 	else
 	{
-		CreateNewTablet();
+		if (CollectedTime >= Settings->Speed)
+		{
+			CollectedTime -= Settings->Speed;
+			CreateNewTablet();
+		}
 	}
 }
 
@@ -228,7 +213,7 @@ bool AMainGrid::DestroyRound()
 	{
 		Point from = Point(i, 0);
 		Point to = from;
-		for (int j = 1; j < LogicGrid.GridHeight; j++)
+		for (int j = 0; j < LogicGrid.GridHeight; j++)
 		{
 			LogicBlockTypes* cell = &LogicGrid.Grid[i][j];
 			
@@ -255,7 +240,7 @@ bool AMainGrid::DestroyRound()
 	{
 		Point from = Point(0, j);
 		Point to = from;
-		for (int i = 1; i < LogicGrid.GridWidth; i++)
+		for (int i = 0; i < LogicGrid.GridWidth; i++)
 		{
 			LogicBlockTypes* cell = &LogicGrid.Grid[i][j];
 
@@ -275,6 +260,9 @@ bool AMainGrid::DestroyRound()
 					delElem.Add(DeleteElements(from, to));
 				from = Point(i, j);
 			}
+			if (i == 7)
+				if (FMath::Abs(from.X - to.X) >= 3 || FMath::Abs(from.Y - to.Y) >= 3)
+					delElem.Add(DeleteElements(from, to));
 		}
 	}
 
@@ -331,6 +319,15 @@ void AMainGrid::MoveTablet(int32 diffX, int32 diffY)
 		return;
 	if (CheckMoveBlock(this->ControlledTablet, diffX, diffY))
 		SetTabletActorPosition(ControlledTablet, diffX, diffY);
+}
+
+bool AMainGrid::CheckFinishGame()
+{
+	for (int i = 0; i < LogicGrid.GridWidth; i++)
+		for (int j = 0; j < LogicGrid.GridHeight; j++)
+			if (LogicGrid.Grid[i][j].Type == BlockType::Virus)
+				return false;
+	return true;
 }
 
 bool AMainGrid::CheckMoveBlock(AGameBlock* block, int diffX, int diffY)
@@ -414,6 +411,32 @@ void AMainGrid::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AMainGrid::GameCycle(float DeltaTime)
+{
+	CollectedTime += DeltaTime;
+	switch (GameRoundState)
+	{
+	case MoveControlTablet:
+		MoveControlledTablet();
+		break;
+	case DestroyBlocksRound:
+		if (DestroyRound())
+			if (CheckFinishGame())
+			{
+				GameState = GameState::Finished;
+				return;
+			}
+			if (CheckMoveRound())
+				GameRoundState = GameRoundState::MoveUnControlTablet;
+			else
+				GameRoundState = GameRoundState::MoveControlTablet;
+		break;
+	case MoveUnControlTablet:
+		MoveUncontrolledTablet();
+		break;
+	}
+}
+
 void AMainGrid::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
@@ -422,6 +445,7 @@ void AMainGrid::Tick( float DeltaTime )
 	{
 	case GameState::Finished :
 		NewLevel();
+		GameRoundState = GameRoundState::MoveControlTablet;
 		GameState = GameState::UnPaused;
 		break;
 	case GameState::Paused:
