@@ -6,21 +6,7 @@ BlockColor LogicGrid::GetRandomColor()
 {
 	FRandomStream rnd;
 	rnd.GenerateNewSeed();
-	int32 rndNumber = rnd.RandRange(1, 3);
-
-	switch (rndNumber)
-	{
-	case 1:
-		return BlockColor::Red;
-		break;
-	case 2:
-		return BlockColor::Blue;
-		break;
-	case 3:
-		return BlockColor::Yellou;
-		break;
-	}
-	return BlockColor::None;
+	return BlockColor(rnd.RandRange(1, 3));
 }
 
 void LogicGrid::CreateNewTablet()

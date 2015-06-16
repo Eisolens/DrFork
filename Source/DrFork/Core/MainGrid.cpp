@@ -74,12 +74,8 @@ void AMainGrid::NewLevel()
 
 	for (int x = 0; x < LogicGrid.GridWidth; x++)
 		for (int y = 0; y < LogicGrid.GridHeight; y++)
-		{
 			if (LogicGrid.Grid[x][y].Type == BlockType::Virus)
-			{
 				CreateBlock(Point(x, y), FRotator(0, 0, 0));
-			}
-		}
 }
 
 void AMainGrid::CreateNewTablet()
@@ -154,7 +150,7 @@ void AMainGrid::DropTablet(float DeltaTime)
 		//      |
 		//     \ /
 		//TODO MOVE ROUND
-		//TODO then create tablet
+		//then create tablet
 		CreateNewTablet();
 	}
 }
@@ -231,6 +227,7 @@ void AMainGrid::DestroyRound()
 					AGameBlock* block = LogicGrid.Grid[i][j].Ref;
 					if (block->Link != nullptr)
 						block->Link->Link = nullptr;
+					//TODO ADD DESTROY ANIMATION
 					block->Destroy();
 					LogicGrid.ResetCell(Point(i, j));
 				}
@@ -340,7 +337,7 @@ bool AMainGrid::CheckIndexes(AGameBlock* block, int diffX, int diffY)
 
 void AMainGrid::PauseGame()
 { 
-
+	//TODO MAKE PAUSE
 }
 
 void AMainGrid::StartGame()

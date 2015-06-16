@@ -34,8 +34,6 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMate
 
 	BlockMesh->SetStaticMesh(Mesh);
 	BlockMesh->SetMaterial(0, Material);
-	//BlockMesh->OnClicked.AddDynamic(this, &ADrForkBlock::BlockClicked);
-	//BlockMesh->OnInputTouchBegin.AddDynamic(this, &ADrForkBlock::OnFingerPressedBlock);
 }
 
 void AGameBlock::SetOutline(bool check)
