@@ -261,21 +261,7 @@ void AMainGrid::RotateTablet()
 	{
 		SetBlockActorPosition(ControlledTablet->Link, diff.X, diff.Y);
 		RotateTabletActor(ControlledTablet);
-		switch (ControlledTablet->RotState)
-		{
-		case TabletRotState::Right:
-			ControlledTablet->RotState = TabletRotState::Down;
-			break;
-		case TabletRotState::Down:
-			ControlledTablet->RotState = TabletRotState::Left;
-			break;
-		case TabletRotState::Left:
-			ControlledTablet->RotState = TabletRotState::Up;
-			break;
-		case TabletRotState::Up:
-			ControlledTablet->RotState = TabletRotState::Right;
-			break;
-		}
+		ControlledTablet->RotState = TabletRotState((int(ControlledTablet->RotState) + 1) % 4);
 	}
 }
 
