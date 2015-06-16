@@ -25,6 +25,8 @@ class DRFORK_API AMainGrid : public AActor
 	UMaterialInstance* YeullouMat;
 
 	GameState GameState;
+	GameRoundState GameRoundState;
+
 	LogicGrid LogicGrid;
 
 	float CollectedTime;
@@ -37,14 +39,17 @@ public:
 
 	void NewLevel();
 	void CreateNewTablet();
-	void DropTablet(float DeltaTime);
+	void GameCycle(float DeltaTime);
+	void MoveControlledTablet();
+	void MoveUncontrolledTablet();
 	bool CheckMoveBlock(AGameBlock* block, int diffX, int diffY);
 	bool CeckMoveBlockChield(AGameBlock* block, int diffX, int diffY);
 	bool CheckIndexes(AGameBlock* block, int diffX, int diffY);
 	void SetBlockActorPosition(AGameBlock* block, int diffX, int diffY);
 	void SetTabletActorPosition(AGameBlock* block, int diffX, int diffY);
 	void RotateTabletActor(AGameBlock* block);
-	void DestroyRound();
+	bool DestroyRound();
+	bool CheckMoveRound();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame();

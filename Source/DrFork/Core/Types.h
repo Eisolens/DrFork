@@ -9,6 +9,12 @@ enum TabletRotState {
 	Up
 };
 
+enum GameRoundState {
+	MoveControlTablet = 0,
+	DestroyBlocksRound,
+	MoveUnControlTablet
+};
+
 enum GameState {
 	Paused = 0,
 	UnPaused,

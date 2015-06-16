@@ -23,6 +23,7 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 
 	PrimaryActorTick.bCanEverTick = true;
 	GameState = GameState::Finished;
+	GameRoundState = GameRoundState::MoveControlTablet;
 }
 
 AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
@@ -124,38 +125,96 @@ void AMainGrid::RotateTabletActor(AGameBlock* block)
 	block->Link->SetActorRotation(FRotator(rot.Pitch, rot.Yaw + 90, rot.Roll));
 }
 
-void AMainGrid::DropTablet(float DeltaTime)
+void AMainGrid::GameCycle(float DeltaTime)
+{
+	CollectedTime += DeltaTime;
+	switch (GameRoundState)
+	{
+	case MoveControlTablet:
+		MoveControlledTablet();
+		break;
+	case DestroyBlocksRound:
+		if(DestroyRound())
+			if (CheckMoveRound())
+				GameRoundState = GameRoundState::MoveUnControlTablet;
+			else
+				GameRoundState = GameRoundState::MoveControlTablet;
+			break;
+	case MoveUnControlTablet:
+		MoveUncontrolledTablet();
+		break;
+	}
+}
+
+void AMainGrid::MoveUncontrolledTablet()
+{
+	if (CollectedTime >= Settings::Get()->Speed * 0.8f)
+	{
+		CollectedTime -= Settings::Get()->Speed * 0.8f;
+		GameRoundState = GameRoundState::DestroyBlocksRound;
+		for (int i = 0; i < LogicGrid.GridWidth; i++)
+			for (int j = 1; j < LogicGrid.GridHeight; j++)
+				if (LogicGrid.Grid[i][j].Type == BlockType::Tablet)
+					if (LogicGrid.Grid[i][j].Ref->IsCanMove)
+					{
+						LogicGrid.Grid[i][j].Ref->IsCanMove = false;
+						SetBlockActorPosition(LogicGrid.Grid[i][j].Ref, 0, -1);
+						//TODO ADD DROP SOUND
+					}
+	}
+}
+
+void AMainGrid::MoveControlledTablet()
 {
 	if (ControlledTablet != nullptr)
 	{
-		CollectedTime += DeltaTime;
 		Settings* Settings = Settings::Get();
-		if (CollectedTime >= Settings->Speed)
+		if (CollectedTime >= Settings->GetUnControlledSpeed())
 		{
-			CollectedTime -= Settings->Speed;
+			CollectedTime -= Settings->GetUnControlledSpeed();
 			if (CheckMoveBlock(ControlledTablet, 0, -1))
 			{
 				SetTabletActorPosition(ControlledTablet, 0, -1);
-			} else {
+			}
+			else 
+			{
 				ControlledTablet->SetOutline(false);
 				if (ControlledTablet->Link != nullptr)
 					ControlledTablet->Link->SetOutline(false);
 				ControlledTablet = nullptr;
+				GameRoundState = GameRoundState::DestroyBlocksRound;
 			}
 		}
-	} else {
-		DestroyRound();
-		//TODO DELETE ROUND
-		//     / \
-		//      |
-		//     \ /
-		//TODO MOVE ROUND
-		//then create tablet
+	}
+	else
+	{
 		CreateNewTablet();
 	}
 }
 
-void AMainGrid::DestroyRound()
+bool AMainGrid::CheckMoveRound()
+{
+	bool ret = false;
+	for (int i = 0; i < LogicGrid.GridWidth; i++)
+		for (int j = 1; j < LogicGrid.GridHeight; j++)
+			if (LogicGrid.Grid[i][j].Type == BlockType::Tablet)
+				if (LogicGrid.Grid[i][j].Ref->Link == nullptr)
+					if (CheckIndexes(LogicGrid.Grid[i][j].Ref, 0, -1))
+						switch (LogicGrid.Grid[i][j - 1].Type)
+						{
+						case BlockType::Empty :
+							LogicGrid.Grid[i][j].Ref->IsCanMove = true;
+							ret = true;
+							break;
+						case BlockType::Tablet :
+							if (LogicGrid.Grid[i][j - 1].Ref->IsCanMove)
+								LogicGrid.Grid[i][j].Ref->IsCanMove = true;
+							break;
+						}
+	return ret;
+}
+
+bool AMainGrid::DestroyRound()
 {
 	struct DeleteElements
 	{
@@ -231,6 +290,10 @@ void AMainGrid::DestroyRound()
 					block->Destroy();
 					LogicGrid.ResetCell(Point(i, j));
 				}
+	if (delElem.Num() > 0)
+		return true;
+	else
+		return false;
 }
 
 void AMainGrid::RotateTablet()
@@ -343,6 +406,7 @@ void AMainGrid::PauseGame()
 void AMainGrid::StartGame()
 {
 	//TODO ADD START 3 2 1 ANIMATION
+	GameState = GameState::Started;
 }
 
 void AMainGrid::BeginPlay()
@@ -364,11 +428,9 @@ void AMainGrid::Tick( float DeltaTime )
 		break;
 	case GameState::UnPaused:
 		StartGame();
-		CreateNewTablet();
-		GameState = GameState::Started;
 		break;
 	case GameState::Started:
-		DropTablet(DeltaTime);
+		GameCycle(DeltaTime);
 		break;
 	}
 }

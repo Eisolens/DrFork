@@ -14,6 +14,7 @@ public:
 
 	static Settings* Get(){ if (SettingsReference == nullptr) SettingsReference = new Settings(); return SettingsReference; };
 	void IncreaseComplexity();
+	float GetUnControlledSpeed(){ return Speed * 0.6f; };
 	void Reset();
 
 	Settings();
