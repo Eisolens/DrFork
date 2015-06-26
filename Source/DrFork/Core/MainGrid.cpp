@@ -140,7 +140,7 @@ void AMainGrid::MoveUncontrolledTablet()
 					{
 						LogicGrid.Grid[i][j].Ref->IsCanMove = false;
 						SetBlockActorPosition(LogicGrid.Grid[i][j].Ref, 0, -1);
-						//TODO ADD DROP SOUND
+						OnDrop();
 					}
 	}
 }
@@ -164,6 +164,7 @@ void AMainGrid::MoveControlledTablet()
 					ControlledTablet->Link->SetOutline(false);
 				ControlledTablet = nullptr;
 				GameRoundState = GameRoundState::DestroyBlocksRound;
+				OnDrop();
 			}
 		}
 	}
@@ -265,12 +266,17 @@ bool AMainGrid::DestroyRound()
 					delElem.Add(DeleteElements(from, to));
 		}
 	}
-
+	bool isHaveVirus = false;
+	bool isDestroy = false;
 	for (auto del : delElem)
+	{
 		for (int i = del.From.X; i <= del.To.X; i++)
 			for (int j = del.From.Y; j <= del.To.Y; j++)
 				if (LogicGrid.Grid[i][j].Ref != nullptr)
 				{
+					isDestroy = true;
+					if (LogicGrid.Grid[i][j].Type == BlockType::Virus)
+						isHaveVirus = true;
 					AGameBlock* block = LogicGrid.Grid[i][j].Ref;
 					if (block->Link != nullptr)
 						block->Link->Link = nullptr;
@@ -278,8 +284,18 @@ bool AMainGrid::DestroyRound()
 					block->Destroy();
 					LogicGrid.ResetCell(Point(i, j));
 				}
+	}
 	if (delElem.Num() > 0)
+	{
+		if (isDestroy)
+		{
+			if (isHaveVirus)
+				OnKill();
+			else
+				OnKillTablet();
+		}
 		return true;
+	}
 	else
 		return false;
 }
@@ -310,6 +326,7 @@ void AMainGrid::RotateTablet()
 		SetBlockActorPosition(ControlledTablet->Link, diff.X, diff.Y);
 		RotateTabletActor(ControlledTablet);
 		ControlledTablet->RotState = TabletRotState((int(ControlledTablet->RotState) + 1) % 4);
+		OnRotate();
 	}
 }
 
@@ -318,7 +335,27 @@ void AMainGrid::MoveTablet(int32 diffX, int32 diffY)
 	if (ControlledTablet == nullptr)
 		return;
 	if (CheckMoveBlock(this->ControlledTablet, diffX, diffY))
+	{
 		SetTabletActorPosition(ControlledTablet, diffX, diffY);
+		OnMove();
+	}
+}
+
+void AMainGrid::MultiplyMoveTablet(int32 count)
+{
+	bool isMoved = false;
+	for (int i = 0; i < count; i++)
+	{
+		if (ControlledTablet == nullptr)
+			return;
+		if (CheckMoveBlock(this->ControlledTablet, 0, -1))
+		{
+			SetTabletActorPosition(ControlledTablet, 0, -1);
+			isMoved = true;
+		}
+	}
+	if (isMoved)
+		OnMove();
 }
 
 bool AMainGrid::CheckFinishGame()

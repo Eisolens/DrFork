@@ -67,6 +67,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void MoveTablet(int32 diffX, int32 diffY);
 
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void MultiplyMoveTablet(int32 count);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnRotate();
+	virtual void OnRotate_Implementation(){};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnMove();
+	virtual void OnMove_Implementation(){};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnDrop();
+	virtual void OnDrop_Implementation(){};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnKill();
+	virtual void OnKill_Implementation(){};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnKillTablet();
+	virtual void OnKillTablet_Implementation(){};
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
