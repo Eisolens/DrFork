@@ -10,7 +10,7 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 	ControlledTablet = nullptr;
 
 	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> tablet(TEXT("/Game/Meshes/Tablet"));
-	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> virus(TEXT("/Game/Meshes/Virus"));
+	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> virus(TEXT("/Engine/BasicShapes/Sphere"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> redMaterial(TEXT("/Game/Materials/RedMat"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> blueMaterial(TEXT("/Game/Materials/BlueMat"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> yeullouMaterial(TEXT("/Game/Materials/YeullouMat"));
@@ -62,7 +62,7 @@ AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
 
 
 	NewBlock->Init(LogicGrid.Grid[pos.X][pos.Y].Type, LogicGrid.Grid[pos.X][pos.Y].Color, bufMesh, bufmat);
-	NewBlock->AttachRootComponentToActor(this);
+	NewBlock->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
 	return NewBlock;
 }
 
@@ -83,15 +83,21 @@ void AMainGrid::NewLevel()
 
 void AMainGrid::CreateNewTablet()
 {
-	LogicGrid.CreateNewTablet();
+	if (LogicGrid.CreateNewTablet())
+	{
 
-	AGameBlock* LeftPart = CreateBlock(Point(3, LogicGrid.GridHeight - 1), FRotator(0, 0, -90));
-	AGameBlock* RightPart = CreateBlock(Point(4, LogicGrid.GridHeight - 1), FRotator(0, 0, 90));
-	LeftPart->SetOutline(true);
-	RightPart->SetOutline(true);
-	LeftPart->Link = RightPart;
-	RightPart->Link = LeftPart;
-	this->ControlledTablet = LeftPart;
+		AGameBlock* LeftPart = CreateBlock(Point(3, LogicGrid.GridHeight - 1), FRotator(0, 0, -90));
+		AGameBlock* RightPart = CreateBlock(Point(4, LogicGrid.GridHeight - 1), FRotator(0, 0, 90));
+		LeftPart->SetOutline(true);
+		RightPart->SetOutline(true);
+		LeftPart->Link = RightPart;
+		RightPart->Link = LeftPart;
+		this->ControlledTablet = LeftPart;
+	}
+	else
+	{
+		GameOver();
+	}
 }
 
 void AMainGrid::SetBlockActorPosition(AGameBlock* block, int diffX, int diffY)
@@ -105,17 +111,25 @@ void AMainGrid::SetBlockActorPosition(AGameBlock* block, int diffX, int diffY)
 void AMainGrid::SetTabletActorPosition(AGameBlock* block, int diffX, int diffY)
 {
 	AGameBlock* chield = block->Link;
+	if (chield)
+	{
+		block->SetActorRelativeLocation(FVector((block->Pos.Y + diffY) * BlockSize, (block->Pos.X + diffX) * BlockSize, 0));
+		chield->SetActorRelativeLocation(FVector((chield->Pos.Y + diffY) * BlockSize, (chield->Pos.X + diffX) * BlockSize, 0));
+		Point blockPos = Point(block->Pos.X + diffX, block->Pos.Y + diffY);
+		Point chieldPos = Point(chield->Pos.X + diffX, chield->Pos.Y + diffY);
 
-	block->SetActorRelativeLocation(FVector((block->Pos.Y + diffY) * BlockSize, (block->Pos.X + diffX) * BlockSize, 0));
-	chield->SetActorRelativeLocation(FVector((chield->Pos.Y + diffY) * BlockSize, (chield->Pos.X + diffX) * BlockSize, 0));
+		LogicGrid.MoveTablet(block->Pos, blockPos, chield->Pos, chieldPos);
 
-	Point blockPos = Point(block->Pos.X + diffX, block->Pos.Y + diffY);
-	Point chieldPos = Point(chield->Pos.X + diffX, chield->Pos.Y + diffY);
-
-	LogicGrid.MoveTablet(block->Pos, blockPos, chield->Pos, chieldPos);
-
-	block->Pos = blockPos;
-	chield->Pos = chieldPos;
+		chield->Pos = chieldPos;
+		block->Pos = blockPos;
+	}
+	else
+	{
+		block->SetActorRelativeLocation(FVector((block->Pos.Y + diffY) * BlockSize, (block->Pos.X + diffX) * BlockSize, 0));
+		Point blockPos = Point(block->Pos.X + diffX, block->Pos.Y + diffY);
+		LogicGrid.MoveBlock(block->Pos, blockPos);
+		block->Pos = blockPos;
+	}
 }
 
 void AMainGrid::RotateTabletActor(AGameBlock* block)
@@ -132,16 +146,17 @@ void AMainGrid::MoveUncontrolledTablet()
 	if (CollectedTime >= Settings::Get()->GetUnControlledSpeed())
 	{
 		CollectedTime -= Settings::Get()->GetUnControlledSpeed();
-		GameRoundState = GameRoundState::DestroyBlocksRound;
 		for (int i = 0; i < LogicGrid.GridWidth; i++)
 			for (int j = 1; j < LogicGrid.GridHeight; j++)
 				if (LogicGrid.Grid[i][j].Type == BlockType::Tablet)
-					if (LogicGrid.Grid[i][j].Ref->IsCanMove)
+				{
+					auto GameBlock = LogicGrid.Grid[i][j].Ref;
+					if (CheckMoveBlock(GameBlock, 0, -1))
 					{
-						LogicGrid.Grid[i][j].Ref->IsCanMove = false;
-						SetBlockActorPosition(LogicGrid.Grid[i][j].Ref, 0, -1);
+						SetTabletActorPosition(GameBlock, 0, -1);
 						OnDrop();
 					}
+				}
 	}
 }
 
@@ -160,8 +175,6 @@ void AMainGrid::MoveControlledTablet()
 			else 
 			{
 				ControlledTablet->SetOutline(false);
-				if (ControlledTablet->Link != nullptr)
-					ControlledTablet->Link->SetOutline(false);
 				ControlledTablet = nullptr;
 				GameRoundState = GameRoundState::DestroyBlocksRound;
 				OnDrop();
@@ -180,24 +193,14 @@ void AMainGrid::MoveControlledTablet()
 
 bool AMainGrid::CheckMoveRound()
 {
-	bool ret = false;
 	for (int i = 0; i < LogicGrid.GridWidth; i++)
 		for (int j = 1; j < LogicGrid.GridHeight; j++)
 			if (LogicGrid.Grid[i][j].Type == BlockType::Tablet)
-				if (LogicGrid.Grid[i][j].Ref->Link == nullptr)
-					if (CheckIndexes(LogicGrid.Grid[i][j].Ref, 0, -1))
-						switch (LogicGrid.Grid[i][j - 1].Type)
-						{
-						case BlockType::Empty :
-							LogicGrid.Grid[i][j].Ref->IsCanMove = true;
-							ret = true;
-							break;
-						case BlockType::Tablet :
-							if (LogicGrid.Grid[i][j - 1].Ref->IsCanMove)
-								LogicGrid.Grid[i][j].Ref->IsCanMove = true;
-							break;
-						}
-	return ret;
+			{
+				if (CheckMoveBlock(LogicGrid.Grid[i][j].Ref, 0, -1))
+					return true;
+			}
+	return false;
 }
 
 bool AMainGrid::DestroyRound()
@@ -321,6 +324,23 @@ void AMainGrid::RotateTablet()
 		diff = Point(1, -1);
 		break;
 	}
+
+	if (ControlledTablet->Link->Pos.X + diff.X < 0)
+	{
+		if (CheckMoveBlock(ControlledTablet, 1, 0))
+		{
+			SetTabletActorPosition(ControlledTablet, 1, 0);
+		}
+	}
+
+	if (ControlledTablet->Link->Pos.X + diff.X > LogicGrid.GridWidth - 1)
+	{
+		if (CheckMoveBlock(ControlledTablet, -1, 0))
+		{
+			SetTabletActorPosition(ControlledTablet, -1, 0);
+		}
+	}
+
 	if (CeckMoveBlockChield(ControlledTablet, diff.X, diff.Y))
 	{
 		SetBlockActorPosition(ControlledTablet->Link, diff.X, diff.Y);
@@ -432,6 +452,13 @@ bool AMainGrid::CheckIndexes(AGameBlock* block, int diffX, int diffY)
 	return true;
 }
 
+void AMainGrid::GameOver()
+{
+	//TODO MAKE GAME OVER
+	Settings::Get()->Reset();	
+	GameState = GameState::Finished;
+}
+
 void AMainGrid::PauseGame()
 { 
 	//TODO MAKE PAUSE
@@ -470,6 +497,8 @@ void AMainGrid::GameCycle(float DeltaTime)
 		break;
 	case MoveUnControlTablet:
 		MoveUncontrolledTablet();
+		if(!CheckMoveRound())
+			GameRoundState = GameRoundState::DestroyBlocksRound;
 		break;
 	}
 }

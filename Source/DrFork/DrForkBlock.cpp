@@ -32,8 +32,8 @@ ADrForkBlock::ADrForkBlock(const FObjectInitializer& ObjectInitializer)
 	BlockMesh->SetRelativeScale3D(FVector(1.f,1.f,0.25f));
 	BlockMesh->SetRelativeLocation(FVector(0.f,0.f,25.f));
 	BlockMesh->SetMaterial(0, ConstructorStatics.BlueMaterial.Get());
-	BlockMesh->AttachTo(DummyRoot);
-	BlockMesh->OnClicked.AddDynamic(this, &ADrForkBlock::BlockClicked);
+	BlockMesh->AttachToComponent(DummyRoot, FAttachmentTransformRules::KeepRelativeTransform);
+	//BlockMesh->OnClicked.AddDynamic(this, &ADrForkBlock::BlockClicked);
 	BlockMesh->OnInputTouchBegin.AddDynamic(this, &ADrForkBlock::OnFingerPressedBlock);
 
 	// Save a pointer to the orange material

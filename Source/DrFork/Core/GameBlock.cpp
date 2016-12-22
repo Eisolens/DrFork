@@ -4,11 +4,10 @@
 AGameBlock::AGameBlock(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	IsCanMove = false;
 	DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Dummy0"));
 	RootComponent = DummyRoot;
 	BlockMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BlockMesh0"));
-	BlockMesh->AttachTo(DummyRoot);
+	BlockMesh->AttachToComponent(DummyRoot, FAttachmentTransformRules::KeepRelativeTransform);
 	RotState = TabletRotState::Right;
 	PrimaryActorTick.bCanEverTick = false;
 	Link = nullptr;
@@ -26,7 +25,7 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMate
 		this->RootComponent->SetMobility(EComponentMobility::Movable);
 		break;
 	case BlockType::Virus:
-		this->SetActorScale3D(FVector(1, 1, 0.5f));
+		this->SetActorScale3D(FVector(2, 2, 1));
 		this->RootComponent->SetMobility(EComponentMobility::Stationary);
 		break;
 	}
@@ -38,4 +37,6 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMate
 void AGameBlock::SetOutline(bool check)
 {
 	BlockMesh->SetRenderCustomDepth(check);
+	if(Link)
+		Link->BlockMesh->SetRenderCustomDepth(check);
 }

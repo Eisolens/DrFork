@@ -62,6 +62,9 @@ public:
 	void PauseGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
+	void GameOver();
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
 	void RotateTablet();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")

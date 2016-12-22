@@ -17,7 +17,7 @@ ADrForkBlockGrid::ADrForkBlockGrid(const FObjectInitializer& ObjectInitializer)
 	ScoreText->SetRelativeLocation(FVector(200.f,0.f,0.f));
 	ScoreText->SetRelativeRotation(FRotator(90.f,0.f,0.f));
 	ScoreText->SetText(TEXT("Score: 0"));
-	ScoreText->AttachTo(DummyRoot);
+	ScoreText->AttachToComponent(DummyRoot, FAttachmentTransformRules::KeepRelativeTransform);
 
 	// Set defaults
 	Size = 3;

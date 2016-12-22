@@ -17,7 +17,7 @@ public:
 	void MoveTablet(const Point& from1, const Point& to1, const Point& from2, const Point& to2);
 	void ResetCell(const Point& pos);
 	
-	void CreateNewTablet();
+	bool CreateNewTablet();
 
 	void NewLevel();
 

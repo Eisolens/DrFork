@@ -9,12 +9,16 @@ BlockColor LogicGrid::GetRandomColor()
 	return BlockColor(rnd.RandRange(1, 3));
 }
 
-void LogicGrid::CreateNewTablet()
+bool LogicGrid::CreateNewTablet()
 {
+	if (Grid[3][GridHeight - 1].Ref)
+		return false;
+
 	for (int i = 0; i < 2; i++){
 		Grid[3 + i][GridHeight - 1].Type = BlockType::Tablet;
 		Grid[3 + i][GridHeight - 1].Color = GetRandomColor();
 	}
+	return true;
 }
 
 void LogicGrid::NewLevel()

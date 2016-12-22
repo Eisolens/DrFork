@@ -20,7 +20,6 @@ public:
 	TabletRotState RotState;
 	AGameBlock* Link;
 	Point Pos;
-	bool IsCanMove;
 
 	AGameBlock(const FObjectInitializer& ObjectInitializer);
 	void Init(BlockType Type, BlockColor Color, UStaticMesh* Mesh, UMaterialInstance* Material);
