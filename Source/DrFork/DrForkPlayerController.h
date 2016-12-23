@@ -10,5 +10,3 @@ class ADrForkPlayerController : public APlayerController
 public:
 	ADrForkPlayerController(const FObjectInitializer& ObjectInitializer);
 };
-
-

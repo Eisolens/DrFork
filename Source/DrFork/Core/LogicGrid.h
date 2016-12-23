@@ -19,7 +19,7 @@ public:
 	
 	bool CreateNewTablet();
 
-	void NewLevel();
+	void NewLevel(int VirusCount);
 
 	LogicGrid();
 	~LogicGrid();

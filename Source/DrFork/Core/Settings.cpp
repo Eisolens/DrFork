@@ -18,12 +18,25 @@ void Settings::IncreaseComplexity()
 	VirusCount += minIncreaseVirusCount;
 }
 
-void Settings::Reset()
+void Settings::Reset(int SpeedMultyply, int VirusMultyply)
 {
-	Speed = DefaultSpeed;
-	VirusCount = DefaultVirusCount;
-}
+	if (SpeedMultyply < 1) SpeedMultyply = 1;
+	if (VirusMultyply < 1) VirusMultyply = 1;
 
-Settings::~Settings()
-{
+	Speed = DefaultSpeed / static_cast<float>(SpeedMultyply);
+	VirusCount = DefaultVirusCount * VirusMultyply;
 }
+float Settings::GetUnControlledSpeed() const
+{ 
+	const float UnControlledSpeed = Speed * 0.7f;
+	const float MinimumuncontrolledSpeed = 0.9f / 5.f;
+
+	if (UnControlledSpeed < MinimumuncontrolledSpeed)
+	{
+		return MinimumuncontrolledSpeed;
+	}
+	else
+	{
+		return UnControlledSpeed;
+	}
+};

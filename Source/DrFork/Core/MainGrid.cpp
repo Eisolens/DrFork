@@ -22,7 +22,7 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 	YeullouMat = yeullouMaterial.Get();
 
 	PrimaryActorTick.bCanEverTick = true;
-	GameState = GameState::Finished;
+	GameState = GameState::Paused;
 	GameRoundState = GameRoundState::MoveControlTablet;
 }
 
@@ -73,7 +73,7 @@ void AMainGrid::NewLevel()
 			if (LogicGrid.Grid[i][j].Ref != nullptr)
 				LogicGrid.Grid[i][j].Ref->Destroy(true);
 
-	LogicGrid.NewLevel();
+	LogicGrid.NewLevel(Settings::Get()->GetVirusCount());
 
 	for (int x = 0; x < LogicGrid.GridWidth; x++)
 		for (int y = 0; y < LogicGrid.GridHeight; y++)
@@ -85,7 +85,6 @@ void AMainGrid::CreateNewTablet()
 {
 	if (LogicGrid.CreateNewTablet())
 	{
-
 		AGameBlock* LeftPart = CreateBlock(Point(3, LogicGrid.GridHeight - 1), FRotator(0, 0, -90));
 		AGameBlock* RightPart = CreateBlock(Point(4, LogicGrid.GridHeight - 1), FRotator(0, 0, 90));
 		LeftPart->SetOutline(true);
@@ -165,9 +164,9 @@ void AMainGrid::MoveControlledTablet()
 	Settings* Settings = Settings::Get();
 	if (ControlledTablet != nullptr)
 	{
-		if (CollectedTime >= Settings->Speed)
+		if (CollectedTime >= Settings->GetSpeed())
 		{
-			CollectedTime -= Settings->Speed;
+			CollectedTime -= Settings->GetSpeed();
 			if (CheckMoveBlock(ControlledTablet, 0, -1))
 			{
 				SetTabletActorPosition(ControlledTablet, 0, -1);
@@ -183,9 +182,9 @@ void AMainGrid::MoveControlledTablet()
 	}
 	else
 	{
-		if (CollectedTime >= Settings->Speed)
+		if (CollectedTime >= Settings->GetSpeed())
 		{
-			CollectedTime -= Settings->Speed;
+			CollectedTime -= Settings->GetSpeed();
 			CreateNewTablet();
 		}
 	}
@@ -454,25 +453,41 @@ bool AMainGrid::CheckIndexes(AGameBlock* block, int diffX, int diffY)
 
 void AMainGrid::GameOver()
 {
-	//TODO MAKE GAME OVER
-	Settings::Get()->Reset();	
-	GameState = GameState::Finished;
+	GameState = GameState::Paused;
+	OnGameOver();
+	GameOverUI();
 }
 
 void AMainGrid::PauseGame()
 { 
-	//TODO MAKE PAUSE
+	GameState = GameState::Paused;
+	StopMusic();
+	PauseUI();
 }
 
-void AMainGrid::StartGame()
+void AMainGrid::ResumeGame()
 {
 	//TODO ADD START 3 2 1 ANIMATION
+	GameUI();
+	ReturnMusic();
 	GameState = GameState::Started;
+}
+
+
+void AMainGrid::StartGame(int SpeedMultyply, int VirusMultyply)
+{
+	Settings::Get()->Reset(SpeedMultyply, VirusMultyply);
+	GameUI();
+	GameMusic();
+	GameState = GameState::Finished;
 }
 
 void AMainGrid::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MainMenuMusic();
+	MainMenuUI();
 }
 
 void AMainGrid::GameCycle(float DeltaTime)
@@ -517,11 +532,10 @@ void AMainGrid::Tick( float DeltaTime )
 	case GameState::Paused:
 		break;
 	case GameState::UnPaused:
-		StartGame();
+		ResumeGame();
 		break;
 	case GameState::Started:
 		GameCycle(DeltaTime);
 		break;
 	}
 }
-

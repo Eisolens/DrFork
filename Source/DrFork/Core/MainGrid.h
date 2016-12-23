@@ -56,7 +56,10 @@ public:
 	bool CheckFinishGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
-	void StartGame();
+	void StartGame(int SpeedMultyply, int VirusMultyply);
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void ResumeGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void PauseGame();
@@ -93,9 +96,51 @@ public:
 		void OnKillTablet();
 	virtual void OnKillTablet_Implementation(){};
 
-	// Called when the game starts or when spawned
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnGameOver();
+	virtual void OnGameOver_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnLevelComplete();
+	virtual void OnLevelComplete_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void OnWinGame();
+	virtual void OnWinGame_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void StopMusic();
+	virtual void StopMusic_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void ReturnMusic();
+	virtual void ReturnMusic_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void MainMenuMusic();
+	virtual void MainMenuMusic_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
+		void GameMusic();
+	virtual void GameMusic_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "UI")
+		void PauseUI();
+	virtual void PauseUI_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "UI")
+		void GameUI();
+	virtual void GameUI_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "UI")
+		void GameOverUI();
+	virtual void GameOverUI_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "UI")
+		void MainMenuUI();
+	virtual void MainMenuUI_Implementation() {};
+
 	virtual void BeginPlay() override;
-	
-	// Called every frame
+
 	virtual void Tick( float DeltaSeconds ) override;
 };

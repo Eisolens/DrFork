@@ -21,17 +21,17 @@ bool LogicGrid::CreateNewTablet()
 	return true;
 }
 
-void LogicGrid::NewLevel()
+void LogicGrid::NewLevel(int VirusCount)
 {
 	for (int x = 0; x < GridWidth; x++)
 		for (int y = 0; y < GridHeight; y++)
 			ResetCell(Point(x, y));
 
-	Settings* settings = Settings::Get();
-	settings->IncreaseComplexity();
+	if (VirusCount > (16 * 14) / 3)
+		VirusCount = (16 * 14) / 3;
 
 	int maxHeight = 2;
-	while ((maxHeight + 1) * GridWidth < settings->VirusCount * 2.5f)
+	while ((maxHeight + 1) * GridWidth < VirusCount * 2.5f)
 	{
 		maxHeight++;
 		if (maxHeight == 12)
@@ -40,7 +40,7 @@ void LogicGrid::NewLevel()
 		}
 	}
 
-	for (int i = 0; i < settings->VirusCount; i++)
+	for (int i = 0; i < VirusCount; i++)
 	{
 		FRandomStream rnd;
 		rnd.GenerateNewSeed();
