@@ -11,7 +11,7 @@ void Settings::IncreaseComplexity()
 {
 	Speed *= 0.9f;
 	
-	int minIncreaseVirusCount = 2;
+	int minIncreaseVirusCount = 3;
 	if (VirusCount * 0.1f > minIncreaseVirusCount)
 		minIncreaseVirusCount = VirusCount * 0.1f;
 

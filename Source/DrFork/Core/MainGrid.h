@@ -1,6 +1,7 @@
 #pragma once
 #include "GameBlock.h"
 #include "LogicGrid.h"
+#include "Settings.h"
 #include "GameFramework/Actor.h"
 #include "MainGrid.generated.h"
 
@@ -30,6 +31,10 @@ class DRFORK_API AMainGrid : public AActor
 	LogicGrid LogicGrid;
 
 	float CollectedTime;
+
+	int LevelCompleted;
+
+	Settings settings;
 public:	
 	AGameBlock* ControlledTablet;
 
@@ -55,6 +60,8 @@ public:
 	bool CheckMoveRound();
 	bool CheckFinishGame();
 
+	void LevelComplete();
+
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartGame(int SpeedMultyply, int VirusMultyply);
 
@@ -75,6 +82,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void MultiplyMoveTablet(int32 count);
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void ContinueGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void NewGame();
+
 
 	UFUNCTION(BlueprintNativeEvent, Category = "GameSound")
 		void OnRotate();
@@ -139,6 +153,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "UI")
 		void MainMenuUI();
 	virtual void MainMenuUI_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "UI")
+		void LevelCompleteUI();
+	virtual void LevelCompleteUI_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "UI")
+		void WinUI();
+	virtual void WinUI_Implementation() {};
 
 	virtual void BeginPlay() override;
 

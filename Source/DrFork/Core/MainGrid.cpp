@@ -1,13 +1,14 @@
 #include "DrFork.h"
 #include "MainGrid.h"
 #include "GameBlock.h"
-#include "Settings.h"
 
 AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 {
 	DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Dummy0"));
 	RootComponent = DummyRoot;
 	ControlledTablet = nullptr;
+
+	LevelCompleted = 0;
 
 	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> tablet(TEXT("/Game/Meshes/Tablet"));
 	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> virus(TEXT("/Engine/BasicShapes/Sphere"));
@@ -73,7 +74,7 @@ void AMainGrid::NewLevel()
 			if (LogicGrid.Grid[i][j].Ref != nullptr)
 				LogicGrid.Grid[i][j].Ref->Destroy(true);
 
-	LogicGrid.NewLevel(Settings::Get()->GetVirusCount());
+	LogicGrid.NewLevel(settings.GetVirusCount());
 
 	for (int x = 0; x < LogicGrid.GridWidth; x++)
 		for (int y = 0; y < LogicGrid.GridHeight; y++)
@@ -142,9 +143,9 @@ void AMainGrid::RotateTabletActor(AGameBlock* block)
 
 void AMainGrid::MoveUncontrolledTablet()
 {
-	if (CollectedTime >= Settings::Get()->GetUnControlledSpeed())
+	if (CollectedTime >= settings.GetUnControlledSpeed())
 	{
-		CollectedTime -= Settings::Get()->GetUnControlledSpeed();
+		CollectedTime -= settings.GetUnControlledSpeed();
 		for (int i = 0; i < LogicGrid.GridWidth; i++)
 			for (int j = 1; j < LogicGrid.GridHeight; j++)
 				if (LogicGrid.Grid[i][j].Type == BlockType::Tablet)
@@ -161,12 +162,11 @@ void AMainGrid::MoveUncontrolledTablet()
 
 void AMainGrid::MoveControlledTablet()
 {
-	Settings* Settings = Settings::Get();
 	if (ControlledTablet != nullptr)
 	{
-		if (CollectedTime >= Settings->GetSpeed())
+		if (CollectedTime >= settings.GetSpeed())
 		{
-			CollectedTime -= Settings->GetSpeed();
+			CollectedTime -= settings.GetSpeed();
 			if (CheckMoveBlock(ControlledTablet, 0, -1))
 			{
 				SetTabletActorPosition(ControlledTablet, 0, -1);
@@ -182,9 +182,9 @@ void AMainGrid::MoveControlledTablet()
 	}
 	else
 	{
-		if (CollectedTime >= Settings->GetSpeed())
+		if (CollectedTime >= settings.GetSpeed())
 		{
-			CollectedTime -= Settings->GetSpeed();
+			CollectedTime -= settings.GetSpeed();
 			CreateNewTablet();
 		}
 	}
@@ -476,7 +476,7 @@ void AMainGrid::ResumeGame()
 
 void AMainGrid::StartGame(int SpeedMultyply, int VirusMultyply)
 {
-	Settings::Get()->Reset(SpeedMultyply, VirusMultyply);
+	settings.Reset(SpeedMultyply, VirusMultyply);
 	GameUI();
 	GameMusic();
 	GameState = GameState::Finished;
@@ -485,9 +485,38 @@ void AMainGrid::StartGame(int SpeedMultyply, int VirusMultyply)
 void AMainGrid::BeginPlay()
 {
 	Super::BeginPlay();
+	NewGame();
+}
 
+void AMainGrid::NewGame()
+{
 	MainMenuMusic();
 	MainMenuUI();
+}
+
+void AMainGrid::LevelComplete()
+{
+	GameState = GameState::Paused;
+	LevelCompleted++;
+	if (LevelCompleted == 8)
+	{
+		LevelCompleted = 0;
+		OnWinGame();
+		WinUI();
+	}
+	else
+	{
+		OnLevelComplete();
+		LevelCompleteUI();
+		settings.IncreaseComplexity();
+	}
+}
+
+void AMainGrid::ContinueGame()
+{
+	GameMusic();
+	GameUI();
+	GameState = GameState::Finished;
 }
 
 void AMainGrid::GameCycle(float DeltaTime)
@@ -502,7 +531,7 @@ void AMainGrid::GameCycle(float DeltaTime)
 		if (DestroyRound())
 			if (CheckFinishGame())
 			{
-				GameState = GameState::Finished;
+				LevelComplete();
 				return;
 			}
 			if (CheckMoveRound())
@@ -524,7 +553,7 @@ void AMainGrid::Tick( float DeltaTime )
 
 	switch (GameState) 
 	{
-	case GameState::Finished :
+	case GameState::Finished:
 		NewLevel();
 		GameRoundState = GameRoundState::MoveControlTablet;
 		GameState = GameState::UnPaused;
