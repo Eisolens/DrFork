@@ -51,6 +51,7 @@ void AGameBlock::Init(BlockType Type, BlockColor Color, UDestructibleMesh* Mesh,
 
 	GetDestructibleComponent()->SetDestructibleMesh(Mesh);
 	GetDestructibleComponent()->SetMaterial(0, Material);
+	GetDestructibleComponent()->SetMaterial(1, Material);
 }
 
 void AGameBlock::SetOutline(bool check)

@@ -31,6 +31,9 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 	GameState = GameState::Paused;
 	GameRoundState = GameRoundState::MoveControlTablet;
+
+	SceneRubbish.AddZeroed(MaxRubbishSize);
+	RubbishIndex = 0;
 }
 
 AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
@@ -290,6 +293,11 @@ bool AMainGrid::DestroyRound()
 						block->Link->Link = nullptr;
 					//TODO ADD DESTROY ANIMATION
 					block->ApplyDamage();
+
+					auto& ref = SceneRubbish[RubbishIndex++%MaxRubbishSize];
+					if (ref)
+						ref->Destroy(true);
+					ref = block;
 					//block->Destroy();
 					LogicGrid.ResetCell(Point(i, j));
 				}
@@ -453,7 +461,7 @@ bool AMainGrid::CheckIndexes(AGameBlock* block, int diffX, int diffY)
 		return false;
 	if (block->Pos.Y + diffY < 0)
 		return false;
-	if (block->Pos.Y + diffY > LogicGrid.GridHeight - 1)
+	if (block->Pos.Y + diffY > LogicGrid.GridHeight - 2)
 		return false;
 	return true;
 }

@@ -9,7 +9,7 @@ class DRFORK_API LogicGrid
 	BlockColor GetRandomColor();
 public:
 	const static int GridWidth = 8;
-	const static int GridHeight = 17;
+	const static int GridHeight = 18;
 	LogicBlockTypes Grid[GridWidth][GridHeight];
 
 	static LogicGrid* Get(){ if (LogicGridReference == nullptr) LogicGridReference = new LogicGrid(); return LogicGridReference; };

@@ -9,6 +9,7 @@
 class AMainGrid;
 static AMainGrid* AMainGridReference = nullptr;
 const static int BlockSize = 200;
+const static int MaxRubbishSize = 32;
 
 UCLASS()
 class DRFORK_API AMainGrid : public AActor
@@ -27,6 +28,9 @@ class DRFORK_API AMainGrid : public AActor
 	UMaterialInstance* YeullouMat;
 	UDestructibleMesh* VirusDM;
 	UDestructibleMesh* TabletDM;
+
+	TArray<AGameBlock*> SceneRubbish;
+	int RubbishIndex;
 
 	GameState GameState;
 	GameRoundState GameRoundState;
