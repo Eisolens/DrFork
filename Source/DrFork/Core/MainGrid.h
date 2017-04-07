@@ -3,6 +3,7 @@
 #include "LogicGrid.h"
 #include "Settings.h"
 #include "GameFramework/Actor.h"
+#include "Engine/DestructibleMesh.h"
 #include "MainGrid.generated.h"
 
 class AMainGrid;
@@ -19,11 +20,13 @@ class DRFORK_API AMainGrid : public AActor
 	UPROPERTY(Category = Block, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* DummyRoot;
 
-	UStaticMesh* Tablet;
-	UStaticMesh* Virus;
+	//UStaticMesh* Tablet;
+	//UStaticMesh* Virus;
 	UMaterialInstance* RedMat;
 	UMaterialInstance* BlueMat;
 	UMaterialInstance* YeullouMat;
+	UDestructibleMesh* VirusDM;
+	UDestructibleMesh* TabletDM;
 
 	GameState GameState;
 	GameRoundState GameRoundState;

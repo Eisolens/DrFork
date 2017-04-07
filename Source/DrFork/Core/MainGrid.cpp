@@ -1,6 +1,7 @@
 #include "DrFork.h"
 #include "MainGrid.h"
 #include "GameBlock.h"
+#include "Classes/PhysicsEngine/DestructibleActor.h"
 
 AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 {
@@ -10,17 +11,22 @@ AMainGrid::AMainGrid(const FObjectInitializer& ObjectInitializer)
 
 	LevelCompleted = 0;
 
-	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> tablet(TEXT("/Game/Meshes/Tablet"));
-	ConstructorHelpers::FObjectFinderOptional<UStaticMesh> virus(TEXT("/Engine/BasicShapes/Sphere"));
+	//ConstructorHelpers::FObjectFinderOptional<UStaticMesh> tablet(TEXT("/Game/Meshes/Tablet"));
+	//ConstructorHelpers::FObjectFinderOptional<UStaticMesh> virus(TEXT("/Engine/BasicShapes/Sphere"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> redMaterial(TEXT("/Game/Materials/RedMat"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> blueMaterial(TEXT("/Game/Materials/BlueMat"));
 	ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> yeullouMaterial(TEXT("/Game/Materials/YeullouMat"));
 
-	Tablet = tablet.Get();
-	Virus = virus.Get();
+	ConstructorHelpers::FObjectFinderOptional<UDestructibleMesh> virus_dm(TEXT("/Game/Meshes/Virus_DM"));
+	ConstructorHelpers::FObjectFinderOptional<UDestructibleMesh> tablet_dm(TEXT("/Game/Meshes/Tablet_DM"));
+
+	//Tablet = tablet.Get();
+	//Virus = virus.Get();
 	RedMat = redMaterial.Get();
 	BlueMat = blueMaterial.Get();
 	YeullouMat = yeullouMaterial.Get();
+	VirusDM = virus_dm.Get();
+	TabletDM = tablet_dm.Get();
 
 	PrimaryActorTick.bCanEverTick = true;
 	GameState = GameState::Paused;
@@ -48,16 +54,16 @@ AGameBlock* AMainGrid::CreateBlock(Point pos, FRotator rot)
 		break;
 	}
 
-	UStaticMesh* bufMesh = nullptr;
+	UDestructibleMesh* bufMesh = nullptr;
 
 	switch (LogicGrid.Grid[pos.X][pos.Y].Type)
 	{
 	case BlockType::Virus:
-		bufMesh = Virus;
+		bufMesh = VirusDM;
 		break;
 
 	case BlockType::Tablet:
-		bufMesh = Tablet;
+		bufMesh = TabletDM;
 		break;
 	}
 
@@ -283,7 +289,8 @@ bool AMainGrid::DestroyRound()
 					if (block->Link != nullptr)
 						block->Link->Link = nullptr;
 					//TODO ADD DESTROY ANIMATION
-					block->Destroy();
+					block->ApplyDamage();
+					//block->Destroy();
 					LogicGrid.ResetCell(Point(i, j));
 				}
 	}
